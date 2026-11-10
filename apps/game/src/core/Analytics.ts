@@ -1,6 +1,7 @@
 export class Analytics {
   private static visitorIdKey = 'nganya_analytics_vid';
   private static visitorId: string = Analytics.getOrCreateVisitorId();
+  private static visitTracked: boolean = false;
 
   private static getOrCreateVisitorId(): string {
     try {
@@ -25,24 +26,33 @@ export class Analytics {
         coins: extra.coins || 0
       };
 
-      // Use sendBeacon if available, otherwise fetch in background
-      if (typeof navigator !== 'undefined' && 'sendBeacon' in navigator) {
-        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-        navigator.sendBeacon('/api/track', blob);
-      } else {
-        fetch('/api/track', {
+      const bodyStr = JSON.stringify(payload);
+
+      // Primary send via fetch (most reliable across mobile browsers & PWAs)
+      fetch('/api/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: bodyStr,
+        keepalive: true
+      }).catch(() => {
+        // Fallback to absolute production domain if relative path fails in standalone PWA mode
+        fetch('https://nganyarunner.humblesherrif.online/api/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true
+          body: bodyStr
         }).catch(() => {});
-      }
+      });
     } catch {
       // Ignore background tracking failures gracefully
     }
   }
 
   public static trackVisit() {
+    if (Analytics.visitTracked) return;
+    Analytics.visitTracked = true;
     Analytics.send('VISIT');
   }
 

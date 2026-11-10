@@ -412,8 +412,63 @@ body {
   font-style: italic;
 }
 
-@media (max-width: 640px) {
-  #app { padding: 16px; }
-  .header { flex-direction: column; align-items: flex-start; gap: 14px; }
-  .kpi-value { font-size: 26px; }
+@media (max-width: 768px) {
+  #app {
+    padding: 12px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .brand {
+    justify-content: flex-start;
+  }
+  .header-actions {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .kpi-card {
+    padding: 14px;
+  }
+  .kpi-label {
+    font-size: 11px;
+  }
+  .kpi-value {
+    font-size: 22px;
+  }
+  .kpi-sub {
+    font-size: 11px;
+  }
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .data-table th, .data-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .auth-card {
+    padding: 24px 18px;
+  }
+  .auth-card h2 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
 }

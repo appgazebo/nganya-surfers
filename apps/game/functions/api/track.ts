@@ -2,23 +2,26 @@ interface Env {
   DB: D1Database;
 }
 
-const ALLOWED_ORIGINS = [
-  'https://nganyarunner.humblesherrif.online',
-  'https://nganyarunner.pages.dev',
-  'http://localhost:3000',
-  'http://localhost:3001'
-];
+function isOriginAllowed(origin: string): boolean {
+  if (!origin) return true;
+  return (
+    origin.includes('humblesherrif.online') ||
+    origin.includes('pages.dev') ||
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1') ||
+    origin.includes('192.168.')
+  );
+}
 
 export const onRequestOptions = async (context: { request: Request }) => {
-  const origin = context.request.headers.get('Origin') || '';
-  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
+  const origin = context.request.headers.get('Origin') || '*';
 
   return new Response(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+      'Access-Control-Allow-Origin': isOriginAllowed(origin) ? origin : '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type, Accept'
     }
   });
 };
@@ -26,28 +29,17 @@ export const onRequestOptions = async (context: { request: Request }) => {
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   const { request, env } = context;
 
-  // 1. ORIGIN & CORS VALIDATION
   const origin = request.headers.get('Origin') || '';
-  const isAllowedOrigin = !origin || ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-
   const corsHeaders = {
-    'Access-Control-Allow-Origin': isAllowedOrigin && origin ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Origin': isOriginAllowed(origin) ? origin : '*',
     'Content-Type': 'application/json'
   };
 
-  if (origin && !isAllowedOrigin) {
-    return new Response(JSON.stringify({ error: 'Forbidden: Unauthorized origin' }), {
-      status: 403,
-      headers: corsHeaders
-    });
-  }
-
-  // 2. HARD RATE LIMITING PER IP (Max 25 requests per minute)
+  // 1. HARD RATE LIMITING PER IP (Max 35 requests per minute)
   const clientIP = request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-real-ip') ||
     'anon';
 
-  // Fast hash of IP for privacy and table indexing
   const ipHash = await hashString(clientIP);
   const now = Math.floor(Date.now() / 1000);
 
@@ -58,17 +50,17 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       `).bind(ipHash).first<{ request_count: number; reset_at: number }>();
 
       if (!record || record.reset_at < now) {
-        // Window expired or new IP: reset window for 60 seconds
+        // Reset window for 60 seconds
         await env.DB.prepare(`
           INSERT INTO rate_limits (ip_hash, request_count, reset_at)
           VALUES (?, 1, ?)
           ON CONFLICT(ip_hash) DO UPDATE SET request_count = 1, reset_at = ?
         `).bind(ipHash, now + 60, now + 60).run();
-      } else if (record.request_count >= 25) {
-        // Hard rate limit exceeded!
+      } else if (record.request_count >= 35) {
+        // Rate limit hit
         const retryAfter = Math.max(1, record.reset_at - now);
         return new Response(JSON.stringify({
-          error: 'Rate limit exceeded. Too many requests, please slow down.'
+          error: 'Rate limit exceeded. Please slow down.'
         }), {
           status: 429,
           headers: {
@@ -77,28 +69,19 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
           }
         });
       } else {
-        // Increment counter
         await env.DB.prepare(`
           UPDATE rate_limits SET request_count = request_count + 1 WHERE ip_hash = ?
         `).bind(ipHash).run();
       }
     } catch {
-      // If rate limit table check fails, continue safely
+      // Continue safely if rate limit table is momentarily locked
     }
   }
 
-  // 3. PAYLOAD SIZE & INTEGRITY CHECKS
-  const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
-  if (contentLength > 2048) {
-    return new Response(JSON.stringify({ error: 'Payload too large (max 2KB)' }), {
-      status: 413,
-      headers: corsHeaders
-    });
-  }
-
+  // 2. PAYLOAD VALIDATION
   try {
     const rawBody = await request.text();
-    if (rawBody.length > 2048) {
+    if (rawBody.length > 4096) {
       return new Response(JSON.stringify({ error: 'Payload too large' }), { status: 413, headers: corsHeaders });
     }
 
@@ -110,7 +93,6 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       referrer?: string;
     };
 
-    // Strict event whitelist
     if (!['VISIT', 'PLAY', 'GAME_OVER'].includes(data.event_type)) {
       return new Response(JSON.stringify({ error: 'Invalid event_type' }), { status: 400, headers: corsHeaders });
     }
@@ -124,17 +106,17 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     const userAgent = request.headers.get('user-agent') || '';
     const referrer = sanitize(data.referrer || request.headers.get('referer') || 'Direct', 128);
 
-    // Simple device detection
+    // Accurate device platform detection
     let device = 'Desktop';
-    if (/mobile/i.test(userAgent)) device = 'Mobile';
-    else if (/tablet|ipad/i.test(userAgent)) device = 'Tablet';
+    if (/iphone|android.*mobile|mobile/i.test(userAgent)) device = 'Mobile';
+    else if (/ipad|tablet|android(?!.*mobile)/i.test(userAgent)) device = 'Tablet';
 
-    // Simple browser detection
+    // Browser detection
     let browser = 'Other';
-    if (/chrome|crios/i.test(userAgent) && !/edg/i.test(userAgent)) browser = 'Chrome';
+    if (/edg/i.test(userAgent)) browser = 'Edge';
+    else if (/chrome|crios/i.test(userAgent)) browser = 'Chrome';
     else if (/safari/i.test(userAgent) && !/chrome/i.test(userAgent)) browser = 'Safari';
     else if (/firefox|fxios/i.test(userAgent)) browser = 'Firefox';
-    else if (/edg/i.test(userAgent)) browser = 'Edge';
 
     const visitorId = sanitize(data.visitor_id || 'anon', 36);
     const distance = Math.min(Math.max(0, Number(data.distance) || 0), 100000);
@@ -160,7 +142,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       ).run();
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, country, city, device }), {
       status: 200,
       headers: corsHeaders
     });
