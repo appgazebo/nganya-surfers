@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nganya Surfers - Analytics & Admin Dashboard</title>
+    <title>Nganya Surfers - Admin Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
   </head>
   <body>
     <div id="app">
-      <!-- Top Navigation -->
+      <!-- Top Navigation Header -->
       <header class="header">
         <div class="brand">
           <div class="logo-badge">🚐</div>
@@ -44,93 +44,142 @@
         </div>
       </div>
 
-      <!-- Main Container -->
+      <!-- Navigation Tabs (Overview, Issues, Features) -->
+      <nav class="admin-nav-tabs">
+        <button class="nav-tab active" data-tab="tab-overview">📊 ANALYTICS</button>
+        <button class="nav-tab" data-tab="tab-issues">🐛 REPORTED ISSUES <span id="badge-issues-count" class="tab-badge">0</span></button>
+        <button class="nav-tab" data-tab="tab-features">💡 FEATURE IDEAS <span id="badge-features-count" class="tab-badge">0</span></button>
+      </nav>
+
+      <!-- Main Content Container -->
       <main class="dashboard-content">
-        <!-- KPI Cards Row -->
-        <section class="kpi-grid">
-          <div class="card kpi-card">
-            <div class="kpi-label">TOTAL VISITORS</div>
-            <div class="kpi-value" id="kpi-visitors">0</div>
-            <div class="kpi-sub">Unique players arrived</div>
-          </div>
-          <div class="card kpi-card">
-            <div class="kpi-label">GAMES PLAYED</div>
-            <div class="kpi-value text-accent" id="kpi-plays">0</div>
-            <div class="kpi-sub" id="kpi-play-rate">0% play rate</div>
-          </div>
-          <div class="card kpi-card">
-            <div class="kpi-label">COMPLETED RUNS</div>
-            <div class="kpi-value text-gold" id="kpi-completed">0</div>
-            <div class="kpi-sub">Total game over outcomes</div>
-          </div>
-          <div class="card kpi-card">
-            <div class="kpi-label">HIGH SCORE DISTANCE</div>
-            <div class="kpi-value text-green" id="kpi-best">0 m</div>
-            <div class="kpi-sub" id="kpi-avg">Avg: 0 m</div>
-          </div>
-        </section>
+        <!-- 1. TAB: ANALYTICS OVERVIEW -->
+        <div id="tab-overview" class="tab-content active">
+          <!-- KPI Cards Row -->
+          <section class="kpi-grid">
+            <div class="card kpi-card">
+              <div class="kpi-label">TOTAL VISITORS</div>
+              <div class="kpi-value" id="kpi-visitors">0</div>
+              <div class="kpi-sub">Unique players arrived</div>
+            </div>
+            <div class="card kpi-card">
+              <div class="kpi-label">GAMES PLAYED</div>
+              <div class="kpi-value text-accent" id="kpi-plays">0</div>
+              <div class="kpi-sub" id="kpi-play-rate">0% play rate</div>
+            </div>
+            <div class="card kpi-card">
+              <div class="kpi-label">COMPLETED RUNS</div>
+              <div class="kpi-value text-gold" id="kpi-completed">0</div>
+              <div class="kpi-sub">Total game over outcomes</div>
+            </div>
+            <div class="card kpi-card">
+              <div class="kpi-label">HIGH SCORE DISTANCE</div>
+              <div class="kpi-value text-green" id="kpi-best">0 m</div>
+              <div class="kpi-sub" id="kpi-avg">Avg: 0 m</div>
+            </div>
+          </section>
 
-        <!-- Analytics Grid (Where visitors are coming from) -->
-        <section class="analytics-grid">
-          <!-- Countries Card -->
-          <div class="card">
+          <!-- Analytics Grid (Where visitors are coming from) -->
+          <section class="analytics-grid">
+            <!-- Countries Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3>🌍 Where Visitors Are Coming From</h3>
+                <span class="badge">Country Breakdown</span>
+              </div>
+              <div class="list-container" id="countries-list">
+                <div class="empty-state">Loading geographic data...</div>
+              </div>
+            </div>
+
+            <!-- Top Cities Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3>🏙️ Top Cities</h3>
+                <span class="badge">Metro Areas</span>
+              </div>
+              <div class="list-container" id="cities-list">
+                <div class="empty-state">Loading city data...</div>
+              </div>
+            </div>
+
+            <!-- Devices Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3>📱 Device Platforms</h3>
+                <span class="badge">Client Breakdown</span>
+              </div>
+              <div class="list-container" id="devices-list">
+                <div class="empty-state">Loading devices...</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Live Real-Time Feed -->
+          <section class="card table-card">
             <div class="card-header">
-              <h3>🌍 Where Visitors Are Coming From</h3>
-              <span class="badge">Country Breakdown</span>
+              <h3>⚡ Recent Real-Time Activity Feed</h3>
+              <span class="badge" id="last-updated">Updating...</span>
             </div>
-            <div class="list-container" id="countries-list">
-              <div class="empty-state">Loading geographic data...</div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Location</th>
+                    <th>Device</th>
+                    <th>Distance / Score</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="activity-tbody">
+                  <tr>
+                    <td colspan="5" class="empty-cell">Waiting for activity...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- 2. TAB: DEDICATED REPORTED ISSUES PAGE -->
+        <div id="tab-issues" class="tab-content">
+          <div class="section-top-bar">
+            <div>
+              <h2>🐛 Community Bug Reports</h2>
+              <p class="section-desc">Inspect issues reported by players in real-time, triage, and mark as resolved.</p>
+            </div>
+            <div class="filter-pills" id="issue-filter-pills">
+              <button class="pill active" data-filter="ALL">All (<span id="count-issues-all">0</span>)</button>
+              <button class="pill" data-filter="OPEN">Open (<span id="count-issues-open">0</span>)</button>
+              <button class="pill" data-filter="RESOLVED">Resolved (<span id="count-issues-resolved">0</span>)</button>
             </div>
           </div>
 
-          <!-- Top Cities Card -->
-          <div class="card">
-            <div class="card-header">
-              <h3>🏙️ Top Cities</h3>
-              <span class="badge">Metro Areas</span>
+          <div class="items-list" id="issues-container">
+            <div class="empty-state">Loading bug reports...</div>
+          </div>
+        </div>
+
+        <!-- 3. TAB: DEDICATED FEATURE SUGGESTIONS PAGE -->
+        <div id="tab-features" class="tab-content">
+          <div class="section-top-bar">
+            <div>
+              <h2>💡 Community Feature Ideas</h2>
+              <p class="section-desc">Ideas submitted by players for new Nganyas, power-ups, routes, and gameplay mechanics.</p>
             </div>
-            <div class="list-container" id="cities-list">
-              <div class="empty-state">Loading city data...</div>
+            <div class="filter-pills" id="feature-filter-pills">
+              <button class="pill active" data-filter="ALL">All Ideas (<span id="count-features-all">0</span>)</button>
+              <button class="pill" data-filter="NEW">New (<span id="count-features-new">0</span>)</button>
+              <button class="pill" data-filter="PLANNED">Planned (<span id="count-features-planned">0</span>)</button>
+              <button class="pill" data-filter="COMPLETED">Completed (<span id="count-features-completed">0</span>)</button>
             </div>
           </div>
 
-          <!-- Devices Card -->
-          <div class="card">
-            <div class="card-header">
-              <h3>📱 Device Platforms</h3>
-              <span class="badge">Client Breakdown</span>
-            </div>
-            <div class="list-container" id="devices-list">
-              <div class="empty-state">Loading devices...</div>
-            </div>
+          <div class="items-list" id="features-container">
+            <div class="empty-state">Loading feature suggestions...</div>
           </div>
-        </section>
-
-        <!-- Live Real-Time Feed -->
-        <section class="card table-card">
-          <div class="card-header">
-            <h3>⚡ Recent Real-Time Activity Feed</h3>
-            <span class="badge" id="last-updated">Updating...</span>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>Location</th>
-                  <th>Device</th>
-                  <th>Distance / Score</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody id="activity-tbody">
-                <tr>
-                  <td colspan="5" class="empty-cell">Waiting for activity...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        </div>
       </main>
     </div>
 

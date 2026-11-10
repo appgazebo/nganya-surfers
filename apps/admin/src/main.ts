@@ -1,19 +1,45 @@
-import { fetchStats, getCountryDetails, formatTimeAgo, AnalyticsStats } from './api';
+import {
+  fetchStats,
+  fetchIssues,
+  updateIssueStatus,
+  fetchFeatures,
+  updateFeatureStatus,
+  getCountryDetails,
+  formatTimeAgo,
+  AnalyticsStats,
+  IssueReport,
+  FeatureSuggestion
+} from './api';
 
 let activeAdminKey = sessionStorage.getItem('admin_key') || '';
 let autoRefreshTimer: number | null = null;
 
-async function updateDashboard() {
+let allIssues: IssueReport[] = [];
+let activeIssueFilter = 'ALL';
+
+let allFeatures: FeatureSuggestion[] = [];
+let activeFeatureFilter = 'ALL';
+
+async function updateAllData() {
   const refreshBtn = document.getElementById('refresh-btn') as HTMLButtonElement;
   if (refreshBtn) refreshBtn.textContent = '↻ Loading...';
 
   try {
-    const data = await fetchStats(activeAdminKey);
-    renderKPIs(data.totals);
-    renderCountries(data.topCountries, data.totals.totalVisitors);
-    renderCities(data.topCities);
-    renderDevices(data.devices, data.totals.totalVisits || data.totals.totalVisitors);
-    renderActivity(data.recentActivity);
+    // 1. Fetch Analytics
+    const statsData = await fetchStats(activeAdminKey);
+    renderKPIs(statsData.totals);
+    renderCountries(statsData.topCountries, statsData.totals.totalVisitors);
+    renderCities(statsData.topCities);
+    renderDevices(statsData.devices, statsData.totals.totalVisits || statsData.totals.totalVisitors);
+    renderActivity(statsData.recentActivity);
+
+    // 2. Fetch Reported Issues
+    allIssues = await fetchIssues(activeAdminKey);
+    renderIssues();
+
+    // 3. Fetch Feature Suggestions
+    allFeatures = await fetchFeatures(activeAdminKey);
+    renderFeatures();
 
     const updatedEl = document.getElementById('last-updated');
     if (updatedEl) {
@@ -55,7 +81,7 @@ function hideAuthModal() {
   if (logoutBtn) logoutBtn.style.display = 'block';
 
   if (!autoRefreshTimer) {
-    autoRefreshTimer = window.setInterval(updateDashboard, 20000);
+    autoRefreshTimer = window.setInterval(updateAllData, 20000);
   }
 }
 
@@ -220,14 +246,181 @@ function renderActivity(activity: AnalyticsStats['recentActivity']) {
   }).join('');
 }
 
+// 2. DEDICATED ISSUES PAGE RENDERING
+function renderIssues() {
+  const container = document.getElementById('issues-container');
+  const countBadge = document.getElementById('badge-issues-count');
+  const countAll = document.getElementById('count-issues-all');
+  const countOpen = document.getElementById('count-issues-open');
+  const countResolved = document.getElementById('count-issues-resolved');
+
+  const openCount = allIssues.filter(i => i.status === 'OPEN').length;
+  const resolvedCount = allIssues.filter(i => i.status === 'RESOLVED').length;
+
+  if (countBadge) countBadge.textContent = String(openCount);
+  if (countAll) countAll.textContent = String(allIssues.length);
+  if (countOpen) countOpen.textContent = String(openCount);
+  if (countResolved) countResolved.textContent = String(resolvedCount);
+
+  if (!container) return;
+
+  const filtered = activeIssueFilter === 'ALL'
+    ? allIssues
+    : allIssues.filter(i => i.status === activeIssueFilter);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">No bug reports match this filter.</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(issue => {
+    const isResolved = issue.status === 'RESOLVED';
+    const timeAgo = formatTimeAgo(issue.created_at);
+
+    return `
+      <div class="item-card" data-issue-id="${issue.id}">
+        <div class="item-card-header">
+          <div>
+            <div class="item-card-title">${issue.title}</div>
+            <div class="item-meta">
+              <span class="badge">${issue.category}</span>
+              <span>📍 ${issue.country || 'Unknown'}</span>
+              <span>💻 ${issue.device} (${issue.browser})</span>
+              ${issue.contact ? `<span>📞 Contact: <strong>${issue.contact}</strong></span>` : ''}
+              <span>⏱️ ${timeAgo}</span>
+            </div>
+          </div>
+          <span class="status-badge ${issue.status.toLowerCase()}">${issue.status}</span>
+        </div>
+        <div class="item-desc">${issue.description}</div>
+        <div class="item-card-footer">
+          <span>Issue #${issue.id}</span>
+          <button class="btn-action ${isResolved ? '' : 'resolve'}" onclick="window.handleToggleIssue(${issue.id}, '${isResolved ? 'OPEN' : 'RESOLVED'}')">
+            ${isResolved ? 'Re-open Issue' : '✓ Mark as Resolved'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 3. DEDICATED FEATURES PAGE RENDERING
+function renderFeatures() {
+  const container = document.getElementById('features-container');
+  const countBadge = document.getElementById('badge-features-count');
+  const countAll = document.getElementById('count-features-all');
+  const countNew = document.getElementById('count-features-new');
+  const countPlanned = document.getElementById('count-features-planned');
+  const countCompleted = document.getElementById('count-features-completed');
+
+  const newCount = allFeatures.filter(f => f.status === 'NEW').length;
+  const plannedCount = allFeatures.filter(f => f.status === 'PLANNED').length;
+  const completedCount = allFeatures.filter(f => f.status === 'COMPLETED').length;
+
+  if (countBadge) countBadge.textContent = String(newCount);
+  if (countAll) countAll.textContent = String(allFeatures.length);
+  if (countNew) countNew.textContent = String(newCount);
+  if (countPlanned) countPlanned.textContent = String(plannedCount);
+  if (countCompleted) countCompleted.textContent = String(completedCount);
+
+  if (!container) return;
+
+  const filtered = activeFeatureFilter === 'ALL'
+    ? allFeatures
+    : allFeatures.filter(f => f.status === activeFeatureFilter);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">No feature ideas match this filter.</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(feat => {
+    const timeAgo = formatTimeAgo(feat.created_at);
+
+    return `
+      <div class="item-card">
+        <div class="item-card-header">
+          <div>
+            <div class="item-card-title">💡 ${feat.title}</div>
+            <div class="item-meta">
+              <span class="badge">${feat.category}</span>
+              <span>👤 ${feat.submitter_name || 'Anonymous'}</span>
+              ${feat.contact ? `<span>📞 ${feat.contact}</span>` : ''}
+              <span>⏱️ ${timeAgo}</span>
+            </div>
+          </div>
+          <span class="status-badge ${feat.status.toLowerCase()}">${feat.status}</span>
+        </div>
+        <div class="item-desc">${feat.description}</div>
+        <div class="item-card-footer">
+          <span>Feature #${feat.id}</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-action" onclick="window.handleUpdateFeature(${feat.id}, 'PLANNED')">Set Planned</button>
+            <button class="btn-action resolve" onclick="window.handleUpdateFeature(${feat.id}, 'COMPLETED')">✓ Completed</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Global Actions for buttons
+(window as unknown as { handleToggleIssue: (id: number, status: string) => Promise<void> }).handleToggleIssue = async (id: number, status: string) => {
+  await updateIssueStatus(activeAdminKey, id, status);
+  const target = allIssues.find(i => i.id === id);
+  if (target) target.status = status as 'OPEN' | 'RESOLVED';
+  renderIssues();
+};
+
+(window as unknown as { handleUpdateFeature: (id: number, status: string) => Promise<void> }).handleUpdateFeature = async (id: number, status: string) => {
+  await updateFeatureStatus(activeAdminKey, id, status);
+  const target = allFeatures.find(f => f.id === id);
+  if (target) target.status = status as 'NEW' | 'PLANNED' | 'COMPLETED';
+  renderFeatures();
+};
+
 window.addEventListener('DOMContentLoaded', () => {
   const authForm = document.getElementById('auth-form') as HTMLFormElement;
   const keyInput = document.getElementById('admin-key-input') as HTMLInputElement;
   const logoutBtn = document.getElementById('logout-btn');
   const refreshBtn = document.getElementById('refresh-btn');
 
+  // Tab switching
+  document.querySelectorAll('.nav-tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      tabBtn.classList.add('active');
+      const targetTabId = (tabBtn as HTMLElement).dataset.tab;
+      if (targetTabId) {
+        document.getElementById(targetTabId)?.classList.add('active');
+      }
+    });
+  });
+
+  // Issue filter pills
+  document.querySelectorAll('#issue-filter-pills .pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#issue-filter-pills .pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeIssueFilter = (pill as HTMLElement).dataset.filter || 'ALL';
+      renderIssues();
+    });
+  });
+
+  // Feature filter pills
+  document.querySelectorAll('#feature-filter-pills .pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#feature-filter-pills .pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeFeatureFilter = (pill as HTMLElement).dataset.filter || 'ALL';
+      renderFeatures();
+    });
+  });
+
   if (activeAdminKey) {
-    updateDashboard().then(success => {
+    updateAllData().then(success => {
       if (success) {
         hideAuthModal();
       }
@@ -243,7 +436,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!enteredKey) return;
 
       activeAdminKey = enteredKey;
-      const success = await updateDashboard();
+      const success = await updateAllData();
       if (success) {
         sessionStorage.setItem('admin_key', enteredKey);
         hideAuthModal();
@@ -263,6 +456,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => updateDashboard());
+    refreshBtn.addEventListener('click', () => updateAllData());
   }
 });

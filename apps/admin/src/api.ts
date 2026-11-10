@@ -1,3 +1,28 @@
+export interface IssueReport {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  device: string;
+  browser: string;
+  country: string;
+  contact: string;
+  status: 'OPEN' | 'RESOLVED';
+  created_at: string;
+}
+
+export interface FeatureSuggestion {
+  id: number;
+  title: string;
+  description: string;
+  submitter_name: string;
+  contact: string;
+  category: string;
+  upvotes: number;
+  status: 'NEW' | 'PLANNED' | 'COMPLETED';
+  created_at: string;
+}
+
 export interface AnalyticsStats {
   totals: {
     totalVisitors: number;
@@ -101,4 +126,100 @@ export async function fetchStats(adminKey: string): Promise<AnalyticsStats> {
   }
 
   throw new Error(lastError);
+}
+
+export async function fetchIssues(adminKey: string): Promise<IssueReport[]> {
+  const endpoints = [
+    'https://nganyarunner.humblesherrif.online/api/issues',
+    'https://nganyarunner.pages.dev/api/issues',
+    '/api/issues'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const resp = await fetch(url, {
+        headers: { 'Accept': 'application/json', 'x-admin-key': adminKey }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return data.issues || [];
+      }
+    } catch {
+      // try next
+    }
+  }
+  return [];
+}
+
+export async function updateIssueStatus(adminKey: string, id: number, status: string): Promise<boolean> {
+  const endpoints = [
+    'https://nganyarunner.humblesherrif.online/api/issues',
+    'https://nganyarunner.pages.dev/api/issues',
+    '/api/issues'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const resp = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey
+        },
+        body: JSON.stringify({ id, status })
+      });
+      if (resp.ok) return true;
+    } catch {
+      // try next
+    }
+  }
+  return false;
+}
+
+export async function fetchFeatures(adminKey: string): Promise<FeatureSuggestion[]> {
+  const endpoints = [
+    'https://nganyarunner.humblesherrif.online/api/features',
+    'https://nganyarunner.pages.dev/api/features',
+    '/api/features'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const resp = await fetch(url, {
+        headers: { 'Accept': 'application/json', 'x-admin-key': adminKey }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return data.features || [];
+      }
+    } catch {
+      // try next
+    }
+  }
+  return [];
+}
+
+export async function updateFeatureStatus(adminKey: string, id: number, status: string): Promise<boolean> {
+  const endpoints = [
+    'https://nganyarunner.humblesherrif.online/api/features',
+    'https://nganyarunner.pages.dev/api/features',
+    '/api/features'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const resp = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey
+        },
+        body: JSON.stringify({ id, status })
+      });
+      if (resp.ok) return true;
+    } catch {
+      // try next
+    }
+  }
+  return false;
 }

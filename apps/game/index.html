@@ -18,7 +18,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       * {
         margin: 0;
@@ -33,6 +33,7 @@
         overflow: hidden;
         background-color: #0b0c10;
         font-family: 'Inter', sans-serif;
+        color: #f3f4f6;
       }
       #renderCanvas {
         width: 100%;
@@ -41,6 +42,8 @@
         touch-action: none;
         outline: none;
       }
+
+      /* Touch Controls (Hidden by default, enabled via settings) */
       #touch-controls {
         display: none;
         position: absolute;
@@ -82,11 +85,218 @@
         background: rgba(255, 0, 85, 0.6);
         border-color: #ff0055;
       }
+
+      /* Top Navbar Pill */
+      #top-nav {
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(15, 23, 42, 0.82);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 6px 16px;
+        border-radius: 30px;
+        z-index: 20;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      }
+      .nav-link {
+        color: #e2e8f0;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: color 0.15s ease;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .nav-link:hover {
+        color: #ffd166;
+      }
+      .nav-link.support {
+        color: #10b981;
+      }
+
+      /* Modals (Report Issue, Suggest Feature, Support Dev) */
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 8, 15, 0.88);
+        backdrop-filter: blur(8px);
+        z-index: 50;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-backdrop.active {
+        display: flex;
+      }
+      .modal-box {
+        background: #111827;
+        border: 2px solid #384666;
+        border-radius: 20px;
+        max-width: 480px;
+        width: 100%;
+        padding: 28px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+        position: relative;
+        animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes modalIn {
+        from { transform: scale(0.92); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      .modal-close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: #1f2937;
+        border: none;
+        color: #ffffff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-title {
+        font-family: 'Bungee', sans-serif;
+        color: #ffd166;
+        font-size: 22px;
+        margin-bottom: 8px;
+      }
+      .modal-desc {
+        color: #9ca3af;
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.4;
+      }
+      .form-group {
+        margin-bottom: 14px;
+        text-align: left;
+      }
+      .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #cbd5e1;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+      .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 10px 14px;
+        background: #090d16;
+        border: 1px solid #1f2937;
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.15s ease;
+        user-select: text;
+        -webkit-user-select: text;
+      }
+      .form-input:focus, .form-textarea:focus, .form-select:focus {
+        border-color: #06d6a0;
+      }
+      .form-textarea {
+        resize: vertical;
+        min-height: 85px;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        font-family: 'Bungee', sans-serif;
+        font-size: 15px;
+        background: #06d6a0;
+        color: #0b0c10;
+        border: none;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: transform 0.1s ease, background 0.15s ease;
+      }
+      .btn-submit:hover {
+        background: #05b687;
+      }
+      .btn-submit:active {
+        transform: scale(0.98);
+      }
+      .mpesa-card {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid #10b981;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        margin: 16px 0;
+      }
+      .mpesa-phone {
+        font-family: 'Bungee', sans-serif;
+        font-size: 28px;
+        color: #10b981;
+        letter-spacing: 2px;
+        margin: 8px 0;
+      }
+      .copy-btn {
+        background: #10b981;
+        color: #ffffff;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 6px;
+      }
+      .form-status {
+        margin-top: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        min-height: 20px;
+      }
+      .form-status.success { color: #10b981; }
+      .form-status.error { color: #ef4444; }
+
+      @media (max-width: 640px) {
+        #top-nav {
+          padding: 4px 10px;
+          gap: 6px;
+        }
+        .nav-link {
+          font-size: 11px;
+          padding: 4px 6px;
+        }
+        .modal-box {
+          padding: 20px 16px;
+        }
+        .mpesa-phone {
+          font-size: 22px;
+        }
+      }
     </style>
   </head>
   <body>
+    <!-- Top Quick Links Header Bar -->
+    <nav id="top-nav">
+      <a class="nav-link" id="link-report">🐛 Report Issue</a>
+      <a class="nav-link" id="link-suggest">💡 Suggest Idea</a>
+      <a class="nav-link support" id="link-support">☕ Support Dev</a>
+    </nav>
+
     <canvas id="renderCanvas"></canvas>
     
+    <!-- On-Screen Touch Controls (Optional in settings) -->
     <div id="touch-controls">
       <div class="touch-group">
         <button id="btn-left" class="touch-btn" aria-label="Move Left">◀</button>
@@ -96,6 +306,97 @@
         <button id="btn-boda" class="touch-btn" style="background: rgba(245, 158, 11, 0.7); border-color: #f59e0b; font-size: 24px;" aria-label="Ride Boda-Boda">🏍️</button>
         <button id="btn-slide" class="touch-btn" aria-label="Slide">▼</button>
         <button id="btn-jump" class="touch-btn" aria-label="Jump">▲</button>
+      </div>
+    </div>
+
+    <!-- 1. Report Issue Modal -->
+    <div id="modal-report" class="modal-backdrop">
+      <div class="modal-box">
+        <button class="modal-close" data-close="modal-report">✕</button>
+        <h2 class="modal-title">🐛 REPORT AN ISSUE</h2>
+        <p class="modal-desc">Found a bug or glitch? Tell us so we can fix it in the next update!</p>
+        <form id="form-report">
+          <div class="form-group">
+            <label class="form-label">Issue Title</label>
+            <input type="text" id="report-title" class="form-input" placeholder="e.g. Runner clips speed bump" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="report-category" class="form-select">
+              <option value="BUG">Bug / Glitch</option>
+              <option value="CRASH">Game Freeze / Crash</option>
+              <option value="CONTROLS">Controls / Swipe issue</option>
+              <option value="GRAPHICS">Graphics / Visual Glitch</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="report-desc" class="form-textarea" placeholder="Explain what happened and your device model..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Contact (Phone or WhatsApp - Optional)</label>
+            <input type="text" id="report-contact" class="form-input" placeholder="e.g. 0712345678" />
+          </div>
+          <div id="report-status" class="form-status"></div>
+          <button type="submit" class="btn-submit">Submit Bug Report</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. Suggest Feature Modal -->
+    <div id="modal-suggest" class="modal-backdrop">
+      <div class="modal-box">
+        <button class="modal-close" data-close="modal-suggest">✕</button>
+        <h2 class="modal-title">💡 SUGGEST A FEATURE</h2>
+        <p class="modal-desc">What new Matatus, power-ups, routes, or music would you love to see in Nganya Surfers?</p>
+        <form id="form-suggest">
+          <div class="form-group">
+            <label class="form-label">Feature Title</label>
+            <input type="text" id="suggest-title" class="form-input" placeholder="e.g. Add Githurai 45 Beast Nganya" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="suggest-category" class="form-select">
+              <option value="NEW_NGANYA">New Matatu / Nganya</option>
+              <option value="POWERUP">New Power-Up</option>
+              <option value="ROUTE">New Highway Route</option>
+              <option value="OUTFIT">Character Outfit</option>
+              <option value="GAMEPLAY">Gameplay Mechanic</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Idea Details</label>
+            <textarea id="suggest-desc" class="form-textarea" placeholder="Describe how your feature idea should work..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Name & Contact (Optional)</label>
+            <input type="text" id="suggest-contact" class="form-input" placeholder="e.g. Brian • 0712345678" />
+          </div>
+          <div id="suggest-status" class="form-status"></div>
+          <button type="submit" class="btn-submit">Submit Feature Idea</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 3. Support Developer (M-PESA) Modal -->
+    <div id="modal-support" class="modal-backdrop">
+      <div class="modal-box">
+        <button class="modal-close" data-close="modal-support">✕</button>
+        <h2 class="modal-title">☕ SUPPORT THE DEVELOPER</h2>
+        <p class="modal-desc">Nganya Surfers is an indie project made with love for Nairobi's Matatu culture. Every tip fuels server costs, new 3D matatus, and updates!</p>
+        
+        <div class="mpesa-card">
+          <div style="font-size: 13px; font-weight: 700; color: #10b981; text-transform: uppercase;">M-PESA SUPPORT PHONE</div>
+          <div class="mpesa-phone" id="mpesa-number">0798794745</div>
+          <button class="copy-btn" id="btn-copy-mpesa">📋 Copy Phone Number</button>
+          <div id="copy-feedback" style="font-size: 12px; color: #10b981; margin-top: 6px; min-height: 18px;"></div>
+        </div>
+
+        <p style="font-size: 13px; color: #9ca3af; text-align: center;">
+          Send via <strong>M-PESA Send Money</strong> to <strong>0798794745</strong>.<br>
+          Asante sana kwa kusimamia Kenyan game development! 🇰🇪✨
+        </p>
       </div>
     </div>
 
