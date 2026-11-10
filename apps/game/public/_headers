@@ -1,3 +1,14 @@
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: text/javascript
+
+/manifest.json
+  Cache-Control: no-cache, must-revalidate
+  Content-Type: application/json
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff

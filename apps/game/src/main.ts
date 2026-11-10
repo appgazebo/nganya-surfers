@@ -1,13 +1,43 @@
 import { Game } from './game';
 import { Analytics } from './core/Analytics';
 
-// Register PWA Service Worker
+// Register PWA Service Worker with Automatic Immediate Updates
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((reg) => {
-      console.log('PWA ServiceWorker registered successfully:', reg.scope);
+      // Check for updates immediately on load
+      reg.update();
+
+      // Check for updates whenever user returns to the tab or mobile PWA
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update();
+        }
+      });
+
+      // When an update is detected
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Tell new service worker to activate immediately
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        }
+      });
     }).catch((err) => {
       console.warn('PWA ServiceWorker registration failed:', err);
+    });
+
+    // When the new worker takes control, reload cleanly to apply fresh update
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
     });
   });
 }
