@@ -1,0 +1,14 @@
+{
+  "name": "@nganya-surfers/admin",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "tsc && vite build",
+    "preview": "vite preview --port 3001"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  }
+}

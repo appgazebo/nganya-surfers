@@ -21,6 +21,7 @@ import { EnvironmentManager } from './world/EnvironmentManager';
 import { FXManager } from './core/FXManager';
 import { SoundManager } from './core/SoundManager';
 import { SaveManager } from './core/SaveManager';
+import { Analytics } from './core/Analytics';
 import { InputManager } from './core/InputManager';
 import { Hud } from './ui/Hud';
 import { ShopModal } from './ui/ShopModal';
@@ -295,6 +296,9 @@ export class Game {
     this.nextObstacleSpawnZ = pz + 32;
     this.nextCoinSpawnZ = pz + 20;
     this.chaser.reset(pz);
+
+    // Track game play event
+    Analytics.trackPlay();
   }
 
   public restartGame() {
@@ -327,6 +331,9 @@ export class Game {
     this.saveManager.bankCoins(earnedKSh);
     this.saveManager.setHighScore(this.distanceTraveled);
     this.highScore = this.saveManager.highScore;
+
+    // Track game over analytics
+    Analytics.trackGameOver(this.distanceTraveled, this.coinsCollected);
 
     this.hud.showGameOver(this.distanceTraveled, this.coinsCollected, this.highScore, reason);
   }

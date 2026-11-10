@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nganya Surfers - Analytics & Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top Navigation -->
+      <header class="header">
+        <div class="brand">
+          <div class="logo-badge">🚐</div>
+          <div>
+            <h1>NGANYA SURFERS</h1>
+            <span class="sub-title">Admin & Live Edge Analytics</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="logout-btn" class="btn btn-secondary" style="display: none;">🔒 Logout</button>
+          <div class="live-pill">
+            <span class="live-dot"></span>
+            LIVE D1 EDGE
+          </div>
+          <button id="refresh-btn" class="btn btn-secondary">↻ Refresh</button>
+        </div>
+      </header>
+
+      <!-- Admin Auth Modal Overlay -->
+      <div id="auth-modal" class="auth-overlay">
+        <div class="auth-card">
+          <div class="auth-icon">🔐</div>
+          <h2>ADMIN ACCESS ONLY</h2>
+          <p>Please enter your secure Admin Key to decrypt and inspect live edge analytics.</p>
+          <form id="auth-form">
+            <input type="password" id="admin-key-input" class="auth-input" placeholder="Enter Admin Secret Key" autocomplete="current-password" required />
+            <div id="auth-error" class="auth-error"></div>
+            <button type="submit" class="btn btn-primary auth-submit">Unlock Dashboard</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main Container -->
+      <main class="dashboard-content">
+        <!-- KPI Cards Row -->
+        <section class="kpi-grid">
+          <div class="card kpi-card">
+            <div class="kpi-label">TOTAL VISITORS</div>
+            <div class="kpi-value" id="kpi-visitors">0</div>
+            <div class="kpi-sub">Unique players arrived</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-label">GAMES PLAYED</div>
+            <div class="kpi-value text-accent" id="kpi-plays">0</div>
+            <div class="kpi-sub" id="kpi-play-rate">0% play rate</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-label">COMPLETED RUNS</div>
+            <div class="kpi-value text-gold" id="kpi-completed">0</div>
+            <div class="kpi-sub">Total game over outcomes</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-label">HIGH SCORE DISTANCE</div>
+            <div class="kpi-value text-green" id="kpi-best">0 m</div>
+            <div class="kpi-sub" id="kpi-avg">Avg: 0 m</div>
+          </div>
+        </section>
+
+        <!-- Analytics Grid (Where visitors are coming from) -->
+        <section class="analytics-grid">
+          <!-- Countries Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3>🌍 Where Visitors Are Coming From</h3>
+              <span class="badge">Country Breakdown</span>
+            </div>
+            <div class="list-container" id="countries-list">
+              <div class="empty-state">Loading geographic data...</div>
+            </div>
+          </div>
+
+          <!-- Top Cities Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3>🏙️ Top Cities</h3>
+              <span class="badge">Metro Areas</span>
+            </div>
+            <div class="list-container" id="cities-list">
+              <div class="empty-state">Loading city data...</div>
+            </div>
+          </div>
+
+          <!-- Devices Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3>📱 Device Platforms</h3>
+              <span class="badge">Client Breakdown</span>
+            </div>
+            <div class="list-container" id="devices-list">
+              <div class="empty-state">Loading devices...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Live Real-Time Feed -->
+        <section class="card table-card">
+          <div class="card-header">
+            <h3>⚡ Recent Real-Time Activity Feed</h3>
+            <span class="badge" id="last-updated">Updating...</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Location</th>
+                  <th>Device</th>
+                  <th>Distance / Score</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="activity-tbody">
+                <tr>
+                  <td colspan="5" class="empty-cell">Waiting for activity...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

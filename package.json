@@ -1,18 +1,19 @@
 {
-  "name": "nganya-surfers",
+  "name": "nganya-surfers-monorepo",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy dist",
-    "deploy:preview": "npm run build && wrangler deploy --temporary"
-  },
-  "dependencies": {
-    "@babylonjs/core": "^7.54.0",
-    "@babylonjs/gui": "^7.54.0",
-    "@babylonjs/loaders": "^7.54.0"
+    "dev": "npm run dev --workspace=@nganya-surfers/game",
+    "dev:game": "npm run dev --workspace=@nganya-surfers/game",
+    "dev:admin": "npm run dev --workspace=@nganya-surfers/admin",
+    "build:game": "npm run build --workspace=@nganya-surfers/game",
+    "build:admin": "npm run build --workspace=@nganya-surfers/admin",
+    "build": "npm run build:game && npm run build:admin",
+    "deploy:game": "npm run build:game && cd apps/game && npx wrangler pages deploy dist --project-name=nganyarunner"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

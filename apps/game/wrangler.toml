@@ -1,0 +1,8 @@
+name = "nganyarunner"
+compatibility_date = "2026-11-10"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nganyarunner-analytics"
+database_id = "05c86776-d319-413a-b3d9-2ceae7d30513"

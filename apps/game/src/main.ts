@@ -1,4 +1,5 @@
 import { Game } from './game';
+import { Analytics } from './core/Analytics';
 
 // Register PWA Service Worker
 if ('serviceWorker' in navigator) {
@@ -27,6 +28,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Track page visit
+  Analytics.trackVisit();
+
   const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
   if (!canvas) {
     throw new Error('Canvas element #renderCanvas not found');
