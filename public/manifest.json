@@ -1,0 +1,32 @@
+{
+  "name": "Nganya Surfers: Nairobi Traffic Dodger",
+  "short_name": "Nganya Surfers",
+  "description": "3D Nairobi Highway Runner: dodge speeding Nganyas, surf on bus roofs, and ride Boda-Bodas!",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0c10",
+  "theme_color": "#0b0c10",
+  "categories": ["games", "action", "arcade"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Nganya Surfers - Nairobi Traffic Dodger</title>
+    
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0b0c10" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nganya Surfers" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #0b0c10;
+        font-family: 'Inter', sans-serif;
+      }
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+        outline: none;
+      }
+      #touch-controls {
+        display: none;
+        position: absolute;
+        bottom: 24px;
+        left: 0;
+        right: 0;
+        pointer-events: none;
+        justify-content: space-between;
+        padding: 0 24px;
+        z-index: 10;
+      }
+      .touch-group {
+        display: flex;
+        gap: 14px;
+      }
+      @media (max-width: 850px) {
+        #touch-controls {
+          display: flex;
+        }
+      }
+      .touch-btn {
+        pointer-events: auto;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(8px);
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        color: #ffffff;
+        font-size: 22px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        transition: transform 0.08s ease, background 0.08s ease;
+      }
+      .touch-btn:active {
+        transform: scale(0.92);
+        background: rgba(255, 0, 85, 0.6);
+        border-color: #ff0055;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="renderCanvas"></canvas>
+    
+    <div id="touch-controls">
+      <div class="touch-group">
+        <button id="btn-left" class="touch-btn" aria-label="Move Left">◀</button>
+        <button id="btn-right" class="touch-btn" aria-label="Move Right">▶</button>
+      </div>
+      <div class="touch-group">
+        <button id="btn-boda" class="touch-btn" style="background: rgba(245, 158, 11, 0.7); border-color: #f59e0b; font-size: 24px;" aria-label="Ride Boda-Boda">🏍️</button>
+        <button id="btn-slide" class="touch-btn" aria-label="Slide">▼</button>
+        <button id="btn-jump" class="touch-btn" aria-label="Jump">▲</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
