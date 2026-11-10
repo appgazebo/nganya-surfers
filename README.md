@@ -2,6 +2,10 @@
 
 A 3D infinite runner built with **Babylon.js** and **TypeScript**, inspired by *Subway Surfers* and set in the vibrant world of Nairobi's famous **Nganya / Matatu culture**.
 
+🌐 **Play Live Online**:
+- **Official Custom Domain**: [https://nganyarunner.humblesherrif.online/](https://nganyarunner.humblesherrif.online/)
+- **Cloudflare Pages Mirror**: [https://nganyarunner.pages.dev/](https://nganyarunner.pages.dev/)
+
 ---
 
 ## 🎮 Gameplay & Features
