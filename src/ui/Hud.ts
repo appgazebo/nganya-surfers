@@ -24,6 +24,10 @@ export class Hud {
   public onStartClick: () => void = () => {};
   public onRestartClick: () => void = () => {};
   public onShopClick: () => void = () => {};
+  public onToggleTouchControls: () => void = () => {};
+
+  private touchToggleBtn: Button;
+  private settingsBtn: Button;
 
   constructor() {
     this.ui = AdvancedDynamicTexture.CreateFullscreenUI('HUD');
@@ -114,6 +118,23 @@ export class Hud {
     this.ui.addControl(pursuitAlert);
     this.pursuitAlertText = pursuitAlert;
 
+    // Settings / Touch Toggle Button (Top Left)
+    this.settingsBtn = Button.CreateSimpleButton('settingsBtn', '⚙️');
+    this.settingsBtn.width = '44px';
+    this.settingsBtn.height = '44px';
+    this.settingsBtn.cornerRadius = 22;
+    this.settingsBtn.color = '#ffffff';
+    this.settingsBtn.background = 'rgba(15, 23, 42, 0.8)';
+    this.settingsBtn.fontSize = 20;
+    this.settingsBtn.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+    this.settingsBtn.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    this.settingsBtn.top = '20px';
+    this.settingsBtn.left = '20px';
+    this.settingsBtn.onPointerUpObservable.add(() => {
+      this.onToggleTouchControls();
+    });
+    this.ui.addControl(this.settingsBtn);
+
     // 2. Start Screen Overlay
     this.startPanel = new Rectangle('startPanel');
     this.startPanel.width = '480px';
@@ -178,6 +199,21 @@ export class Hud {
       this.onShopClick();
     });
     startStack.addControl(startShopBtn);
+
+    // Touch Buttons Optional Toggle Button
+    this.touchToggleBtn = Button.CreateSimpleButton('btnToggleTouch', '🎮 BUTTONS: OFF (SWIPE)');
+    this.touchToggleBtn.width = '240px';
+    this.touchToggleBtn.height = '38px';
+    this.touchToggleBtn.color = '#ffffff';
+    this.touchToggleBtn.cornerRadius = 19;
+    this.touchToggleBtn.background = 'rgba(255, 255, 255, 0.15)';
+    this.touchToggleBtn.fontFamily = 'Inter, sans-serif';
+    this.touchToggleBtn.fontSize = 12;
+    this.touchToggleBtn.paddingTop = '8px';
+    this.touchToggleBtn.onPointerUpObservable.add(() => {
+      this.onToggleTouchControls();
+    });
+    startStack.addControl(this.touchToggleBtn);
 
     // 3. Game Over Screen Overlay
     this.gameOverPanel = new Rectangle('gameOverPanel');
@@ -248,6 +284,22 @@ export class Hud {
 
   public getUI(): AdvancedDynamicTexture {
     return this.ui;
+  }
+
+  public updateTouchControlsVisibility(enabled: boolean) {
+    if (this.touchToggleBtn && this.touchToggleBtn.textBlock) {
+      this.touchToggleBtn.textBlock.text = enabled ? '🎮 BUTTONS: ON (TAP)' : '🎮 BUTTONS: OFF (SWIPE)';
+      this.touchToggleBtn.background = enabled ? '#06d6a0' : 'rgba(255, 255, 255, 0.15)';
+    }
+
+    const el = document.getElementById('touch-controls');
+    if (el) {
+      if (enabled) {
+        el.classList.add('visible');
+      } else {
+        el.classList.remove('visible');
+      }
+    }
   }
 
   public updateStats(

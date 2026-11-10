@@ -132,6 +132,14 @@ export class Game {
     this.hud.onStartClick = () => this.startGame();
     this.hud.onRestartClick = () => this.restartGame();
 
+    // Touch controls visibility initialized from settings (default: OFF on mobile for clean swipe)
+    this.hud.updateTouchControlsVisibility(this.saveManager.showTouchButtons);
+    this.hud.onToggleTouchControls = () => {
+      const newState = !this.saveManager.showTouchButtons;
+      this.saveManager.setTouchButtons(newState);
+      this.hud.updateTouchControlsVisibility(newState);
+    };
+
     this.shopModal = new ShopModal(this.hud.getUI(), this.saveManager, this.sound);
     this.shopModal.onSkinChanged = (skinId) => this.player.setSkin(skinId);
     this.hud.onShopClick = () => this.shopModal.show();
@@ -385,19 +393,50 @@ export class Game {
       // Update Chaser pursuit AI
       this.chaser.update(dt, pPos, this.currentSpeed, this.player.isStumbling);
 
-      // Elevated Camera when on the roof (Zero Z-jitter tracking)
-      const desiredDistZ = this.nitroTimer > 0 ? 8.5 : 7.2;
+      // Camera Angle & Framing (Optimized for Mobile Portrait & Kanjo Pursuit)
+      const aspect = this.engine.getAspectRatio(this.camera);
+      const isPortrait = aspect < 1.0;
+
+      // Distance and elevation adapt to phone screen & pursuit state
+      let desiredDistZ = isPortrait ? 8.6 : 7.2;
+      let baseCamY = isPortrait ? 4.5 : 3.8;
+
+      // When Kanjo is on your heels, pull camera back & raise for epic pursuit framing!
+      if (this.chaser.isClose) {
+        desiredDistZ += 1.1;
+        baseCamY += 0.5;
+      }
+
+      // Sheng Nitro boost pull-back
+      if (this.nitroTimer > 0) {
+        desiredDistZ += 1.5;
+      }
+
+      // Elevated height when on bus roof
+      if (this.player.isOnRoof) {
+        baseCamY += 1.8;
+      }
+
+      // Smooth Z tracking
       this.camDistZ += (desiredDistZ - this.camDistZ) * Math.min(8 * dt, 1.0);
       this.camera.position.z = pPos.z - this.camDistZ;
 
-      const targetCamX = pPos.x * 0.35;
-      const targetCamY = (this.player.isOnRoof ? 5.6 : 3.8) + (pPos.y - (this.player.isOnRoof ? 3.4 : 0.9)) * 0.35;
+      // Camera X tracking: on mobile portrait, track active lane closely so runner is NEVER cut off!
+      const followRatio = isPortrait ? 0.88 : 0.65;
+      const targetCamX = pPos.x * followRatio;
+      const targetCamY = baseCamY + (pPos.y - (this.player.isOnRoof ? 3.4 : 0.9)) * 0.35;
 
-      this.camera.position.x += (targetCamX - this.camera.position.x) * Math.min(14 * dt, 1.0);
+      this.camera.position.x += (targetCamX - this.camera.position.x) * Math.min(16 * dt, 1.0);
       this.camera.position.y += (targetCamY - this.camera.position.y) * Math.min(10 * dt, 1.0);
 
-      this.camTarget.set(pPos.x * 0.45, pPos.y + 1.2, pPos.z + 12);
+      // Camera looks directly down active lane
+      const lookTargetX = pPos.x * (isPortrait ? 0.78 : 0.5);
+      this.camTarget.set(lookTargetX, pPos.y + 1.2, pPos.z + 12);
       this.camera.setTarget(this.camTarget);
+
+      // Adaptive FOV for narrow portrait mobile screens
+      const targetFOV = isPortrait ? Math.min(1.08, 0.85 * (0.80 / Math.max(0.46, aspect))) : 0.85;
+      this.camera.fov += (targetFOV - this.camera.fov) * Math.min(6 * dt, 1.0);
 
       // 4. Update Day / Sunset / Night cycle
       this.env.update(this.distanceTraveled);

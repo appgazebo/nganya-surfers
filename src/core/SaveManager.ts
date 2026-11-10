@@ -18,6 +18,7 @@ export interface SaveData {
   totalCoins: number; // Banked KSh
   highScore: number;
   bodaInventory: number; // Number of Boda-Boda rides available
+  showTouchButtons?: boolean; // Optional on-screen touch buttons (default false)
   upgrades: {
     nitro: number;     // 1 to 5
     magnet: number;    // 1 to 5
@@ -114,6 +115,7 @@ export class SaveManager {
           totalCoins: parsed.totalCoins ?? 0,
           highScore: parsed.highScore ?? 0,
           bodaInventory: (parsed.bodaInventory !== undefined && parsed.bodaInventory > 0) ? parsed.bodaInventory : 5,
+          showTouchButtons: parsed.showTouchButtons ?? false, // Default: OFF for clean swipe
           upgrades: {
             nitro: parsed.upgrades?.nitro ?? 1,
             magnet: parsed.upgrades?.magnet ?? 1,
@@ -133,6 +135,7 @@ export class SaveManager {
       totalCoins: 0,
       highScore: 0,
       bodaInventory: 3, // Start with 3 free Boda rides!
+      showTouchButtons: false,
       upgrades: { nitro: 1, magnet: 1, multiplier: 1 },
       unlockedSkins: ['DEFAULT'],
       activeSkin: 'DEFAULT',
@@ -163,6 +166,15 @@ export class SaveManager {
 
   public get activeBike(): string {
     return this.data.activeBike;
+  }
+
+  public get showTouchButtons(): boolean {
+    return this.data.showTouchButtons ?? false;
+  }
+
+  public setTouchButtons(enabled: boolean) {
+    this.data.showTouchButtons = enabled;
+    this.save();
   }
 
   public get bodaInventory(): number {
